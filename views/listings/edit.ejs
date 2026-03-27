@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit WanderTravel</title>
+  </head>
+  <body>
+    <h2>Edit listing</h2>
+    <form>
+      <input
+        type="text"
+        name="listing[title]"
+        id=""
+        value="<%=listing.title%>"
+      />
+      <br />
+      <br />
+      <textarea
+        name="listing[description]"
+        id=""
+        value="<%=listing.description%>"
+      ></textarea>
+      <br />
+      <br />
+      <input
+        type="text"
+        name="listing[image]"
+        id=""
+        placeholder="enter image/url"
+      />
+      <br />
+      <br />
+      <input
+        type="number"
+        name="listing[price]"
+        id=""
+        value="<%=listing.price%>"
+      />
+      <br />
+      <br />
+      <input
+        type="text"
+        name="listing[location]"
+        id=""
+        value="<%=listing.location%>"
+      />
+      <br />
+      <br />
+      <input
+        type="text"
+        name="listing[country]"
+        id=""
+        value="<%=listing.country%>"
+      />
+      <br />
+      <br />
+      <button>Edit</button>
+    </form>
+  </body>
+</html>
