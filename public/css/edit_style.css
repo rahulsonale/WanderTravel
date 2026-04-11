@@ -1,0 +1,86 @@
+/* ================= GLOBAL ================= */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to right, #f8f9fa, #eef1f5);
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= HEADING ================= */
+h2 {
+  text-align: center;
+  margin-top: 40px;
+  color: #333;
+  font-weight: 600;
+}
+
+/* ================= FORM ================= */
+form {
+  width: 400px;
+  margin: 40px auto;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ================= INPUTS ================= */
+input,
+textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+
+  transition: all 0.3s ease;
+}
+
+/* Focus effect */
+input:focus,
+textarea:focus {
+  border-color: #fe424d;
+  outline: none;
+  box-shadow: 0 0 6px rgba(254, 66, 77, 0.3);
+}
+
+/* Textarea */
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ================= BUTTON ================= */
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+
+  background-color: #fe424d;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover */
+button:hover {
+  background-color: #d73740;
+  transform: translateY(-2px);
+}
+
+/* ================= SPACING ================= */
+br {
+  display: none; /* remove ugly spacing */
+}
+
+/* Add spacing properly */
+input,
+textarea,
+button {
+  margin-top: 12px;
+}

@@ -3,73 +3,57 @@ const app = express();
 const mongoose = require("mongoose");
 const Listing = require("./models/listing.js");
 const path = require("path");
+const methodOverride = require("method-override");
+const ejsMate = require("ejs-mate");
+const ExpressError = require("./utils/ExpressError.js");
+const listings = require("./routes/listing.js");
+const reviews = require("./routes/reviews.js");
+const session = require("express-session");
 
-main()
-  .then(() => {
-    console.log("Connection Succesfull");
-  })
+// DB CONNECTION
+mongoose
+  .connect("mongodb://127.0.0.1:27017/wanderlust")
+  .then(() => console.log("Connection Successful"))
   .catch((err) => console.log(err));
 
-async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/wanderlust");
-
-  // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
-}
-
+// VIEW ENGINE
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.engine("ejs", ejsMate);
+
+// MIDDLEWARE
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "/public")));
 
+const sessionOptions = {
+  secret: "mysupersecretcode",
+  resave: false,
+  saveUninitialized: true,
+};
+
+app.use(session(sessionOptions));
+
+// ROUTES
+app.use("/listings", listings);
+app.use("/listings/:id/reviews", reviews);
+
+// HOME
 app.get("/", (req, res) => {
-  res.send("Hi welcome to home");
+  res.send("Home Page");
 });
 
-//index route
-app.get("/listings", async (req, res) => {
-  const allListings = await Listing.find({});
-  res.render("./listings/index.ejs", { allListings });
+// ERROR HANDLING
+app.use((req, res, next) => {
+  next(new ExpressError(404, "Page not found"));
 });
 
-//new route
-app.get("/listings/new", (req, res) => {
-  res.render("./listings/newForm.ejs");
+app.use((err, req, res, next) => {
+  let { statusCode = 500, message = "Something went wrong" } = err;
+  res.status(statusCode).render("error.ejs", { message });
 });
 
-//post route
-app.post("/listings", async (req, res) => {
-  const newListing = new Listing(req.body.listing);
-  await newListing.save();
-  res.redirect("/listings");
-});
-
-//show route
-app.get("/listings/:id", async (req, res) => {
-  let { id } = req.params;
-  const listing = await Listing.findById(id);
-  res.render("./listings/show.ejs", { listing });
-});
-
-//Edit route
-app.get("/listings/:id/edit", async (req, res) => {
-  let { id } = req.params;
-  const listing = await Listing.findById(id);
-  res.render("listings/edit.ejs", { listing });
-});
-
-// app.get("/testlisting", async (req, res) => {
-//   let sampletesting = new Listing({
-//     title: "My new Villa",
-//     description: "First Day Here",
-//     price: 1200,
-//     location: "Calangute , Goa",
-//     country: "India",
-//   });
-
-//   await sampletesting.save();
-//   console.log("Data saved");
-//   res.send("Running succesfullly");
-// });
-
+// SERVER
 app.listen(8080, () => {
-  console.log("Server is listening to port 8080");
+  console.log("Server is running on port 8080");
 });

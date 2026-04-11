@@ -1,0 +1,152 @@
+/* ================= GLOBAL ================= */
+body {
+  font-family: "Source Serif 4", serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* ================= NAVBAR ================= */
+.navbar {
+  height: 5rem;
+  background-color: white;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.fa-compass {
+  color: #fe424d;
+  font-size: 2rem;
+}
+
+.nav-link {
+  color: #222 !important;
+  font-weight: 500;
+}
+
+/* ================= CARDS ================= */
+.card {
+  border: none !important;
+  border-radius: 1rem;
+  overflow: hidden;
+  background-color: #fff;
+  margin-bottom: 2rem;
+
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+/* Image container */
+.img-container {
+  overflow: hidden;
+}
+
+/* Image styling */
+.card-img-top {
+  width: 100%;
+  height: 18rem;
+  object-fit: cover;
+
+  transition: transform 0.4s ease;
+}
+
+/* Zoom effect */
+.img-container:hover .card-img-top {
+  transform: scale(1.08);
+}
+
+/* Card body */
+.card-body {
+  padding: 1rem;
+}
+
+/* Text */
+.card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.card-text {
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* ================= SHOW PAGE ================= */
+.show-img {
+  height: 40vh;
+  object-fit: cover;
+  border-radius: 1rem;
+}
+
+/* Details section */
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+ul li {
+  padding: 6px 0;
+  font-size: 1rem;
+  color: #444;
+}
+
+/* Price highlight */
+ul li:nth-child(3) {
+  font-weight: bold;
+  color: #fe424d;
+}
+
+/* ================= BUTTONS ================= */
+button {
+  background-color: #fe424d;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #d73740;
+}
+
+/* Edit link */
+a {
+  text-decoration: none;
+  color: #0077ff;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ================= FOOTER ================= */
+.f-info {
+  height: 8rem;
+  background-color: #ebebeb;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.f-info-socials i {
+  font-size: 1.2rem;
+  margin-right: 1rem;
+}
+
+.listing-list {
+  font-family: serif;
+}
+
+.delete-listing {
+  margin-bottom: 10px;
+  border-radius: 14px;
+}
