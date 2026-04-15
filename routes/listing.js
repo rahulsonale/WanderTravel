@@ -1,121 +1,153 @@
 const express = require("express");
 const router = express.Router();
-const wrapAsync = require("../utils/wrapAsync.js");
-const { listingSchema, reviewSchema } = require("../schema.js");
-const ExpressError = require("../utils/ExpressError.js");
-const Listing = require("../models/listing.js");
 
-// VALIDATION
+const wrapAsync = require("../utils/wrapAsync");
+const ExpressError = require("../utils/ExpressError");
+
+const Listing = require("../models/listing");
+const { listingSchema, reviewSchema } = require("../schema");
+
+// =======================
+// 🔐 AUTH MIDDLEWARE
+// =======================
+const isLoggedIn = (req, res, next) => {
+  console.log(req.user);
+
+  if (!req.isAuthenticated()) {
+    req.session.redirectUrl = req.originalUrl;
+    req.flash("error", "You must be logged in!");
+    return res.redirect("/login");
+  }
+  next();
+};
+
+// =======================
+// ✅ VALIDATION
+// =======================
 const validateListing = (req, res, next) => {
   if (!req.body.listing) {
-    throw new ExpressError(400, "Invalid listing data");
+    throw new ExpressError("Invalid listing data", 400);
   }
 
-  let { error } = listingSchema.validate(req.body);
+  const { error } = listingSchema.validate(req.body);
 
   if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
+    const errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(errMsg, 400);
   }
   next();
 };
+
 const validateReview = (req, res, next) => {
   if (!req.body.review) {
-    throw new ExpressError(400, "Invalid review data");
+    throw new ExpressError("Invalid review data", 400);
   }
 
-  let { error } = reviewSchema.validate(req.body);
+  const { error } = reviewSchema.validate(req.body);
 
   if (error) {
-    let errMsg = error.details.map((el) => el.message).join(",");
-    throw new ExpressError(400, errMsg);
+    const errMsg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(errMsg, 400);
   }
   next();
 };
 
-// INDEX
+// =======================
+// 📌 INDEX
+// =======================
 router.get(
   "/",
   wrapAsync(async (req, res) => {
     const allListings = await Listing.find({});
-    res.render("listings/index.ejs", { allListings });
+    res.render("listings/index", { allListings });
   }),
 );
 
-// NEW
-router.get("/new", (req, res) => {
-  res.render("listings/newForm.ejs");
+// =======================
+// ➕ NEW (FORM)
+// =======================
+router.get("/new", isLoggedIn, (req, res) => {
+  res.render("listings/newForm"); // make sure this file exists
 });
 
-// CREATE
+// =======================
+// 🆕 CREATE
+// =======================
 router.post(
   "/",
+  isLoggedIn,
   validateListing,
   wrapAsync(async (req, res) => {
     let data = req.body.listing;
 
+    // Fix image structure
     data.image = {
       url: data.image,
       filename: "listingimage",
     };
 
     const newListing = new Listing(data);
+    newListing.owner = req.user._id;
     await newListing.save();
-    req.flash("success", "New Listing Created!");
 
+    req.flash("success", "New Listing Created!");
     res.redirect("/listings");
   }),
 );
 
-// SHOW
+// =======================
+// 🔍 SHOW
+// =======================
 router.get(
   "/:id",
   wrapAsync(async (req, res) => {
-    let { id } = req.params;
+    const { id } = req.params;
 
-    const listing = await Listing.findById(id).populate("reviews");
-    if (!listing) {
-      req.flash("error", "Listing you requested does not exists");
-      res.redirect("/listings");
-    }
+    const listing = await Listing.findById(id)
+      .populate("reviews")
+      .populate("owner");
 
     if (!listing) {
-      throw new ExpressError(404, "Listing not found");
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
     }
 
-    res.render("listings/show.ejs", { listing });
+    res.render("listings/show", { listing });
   }),
 );
 
-// EDIT
+// =======================
+// ✏️ EDIT
+// =======================
 router.get(
   "/:id/edit",
+  isLoggedIn,
   wrapAsync(async (req, res) => {
-    let { id } = req.params;
+    const { id } = req.params;
 
     const listing = await Listing.findById(id);
 
     if (!listing) {
-      req.flash("error", "Listing you requested does not exists");
-      res.redirect("/listings");
-    } 
-
-    if (!listing) {
-      throw new ExpressError(404, "Listing not found");
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
     }
 
-    res.render("listings/edit.ejs", { listing });
+    res.render("listings/edit", { listing });
   }),
 );
 
-// UPDATE
+// =======================
+// 🔄 UPDATE
+// =======================
 router.put(
   "/:id",
+  isLoggedIn,
   validateListing,
   wrapAsync(async (req, res) => {
-    let { id } = req.params;
+    const { id } = req.params;
     let data = req.body.listing;
 
+    // Handle image update safely
     if (data.image && data.image.trim() !== "") {
       data.image = {
         url: data.image,
@@ -125,19 +157,37 @@ router.put(
       delete data.image;
     }
 
-    await Listing.findByIdAndUpdate(id, data);
+    const updatedListing = await Listing.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedListing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
+    }
+
     req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
   }),
 );
 
-// DELETE
+// =======================
+// ❌ DELETE
+// =======================
 router.delete(
   "/:id",
+  isLoggedIn,
   wrapAsync(async (req, res) => {
-    let { id } = req.params;
+    const { id } = req.params;
 
-    await Listing.findByIdAndDelete(id);
+    const deletedListing = await Listing.findByIdAndDelete(id);
+
+    if (!deletedListing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
+    }
+
     req.flash("success", "Listing Deleted!");
     res.redirect("/listings");
   }),
