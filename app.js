@@ -6,9 +6,14 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/reviews.js");
+const listingsRoutes = require("./routes/listing.js");
+const reviewsRoutes = require("./routes/reviews.js");
+const userRoutes = require("./routes/user.js");
 const session = require("express-session");
+const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStatergy = require("passport-local");
+const User = require("./models/user.js");
 
 // DB CONNECTION
 mongoose
@@ -30,18 +35,48 @@ const sessionOptions = {
   secret: "mysupersecretcode",
   resave: false,
   saveUninitialized: true,
+  cookie: {
+    expired: Date.now() + 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+  },
 };
-
-app.use(session(sessionOptions));
-
-// ROUTES
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
-
-// HOME
 app.get("/", (req, res) => {
   res.send("Home Page");
 });
+
+app.use(session(sessionOptions));
+app.use(flash());
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStatergy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error ");
+  next();
+});
+
+// app.get("/demouser", async (req, res) => {
+//   let fakeUser = new User({
+//     email: "student@gmail.com",
+//     username: "student1",
+//   });
+
+//   let registeredUser = await User.register(fakeUser, "helloworld");
+//   res.send(registeredUser);
+// });
+
+// ROUTES
+app.use("/listings", listingsRoutes);
+app.use("/listings/:id/reviews", reviewsRoutes);
+app.use("/", userRoutes);
+
+// HOME
 
 // ERROR HANDLING
 app.use((req, res, next) => {
