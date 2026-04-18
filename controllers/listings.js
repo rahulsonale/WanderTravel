@@ -38,6 +38,7 @@ module.exports.editListings = async (req, res) => {
 };
 
 module.exports.updateListings = async (req, res) => {
+  const { id } = req.params;
   let data = req.body.listing;
 
   // Handle image update safely
@@ -81,14 +82,14 @@ module.exports.deleteListings = async (req, res) => {
 module.exports.createListings = async (req, res) => {
   let data = req.body.listing;
 
-  // Fix image structure
-  data.image = {
-    url: data.image,
-    filename: "listingimage",
-  };
-
   const newListing = new Listing(data);
   newListing.owner = req.user._id;
+
+  newListing.image = {
+    url: req.file.path,
+    filename: req.file.filename,
+  };
+
   await newListing.save();
 
   req.flash("success", "New Listing Created!");

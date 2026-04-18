@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-
 const wrapAsync = require("../utils/wrapAsync");
 const ExpressError = require("../utils/ExpressError");
-
 const { listingSchema } = require("../schema");
 const { isOwner } = require("../middlewware");
-
+const multer = require("multer");
+const { storage } = require("../cloudConfig");
+const upload = multer({ storage });
 const listingControllers = require("../controllers/listings");
 
 // AUTH MIDDLEWARE
@@ -41,6 +41,7 @@ router
   .get(wrapAsync(listingControllers.index))
   .post(
     isLoggedIn,
+    upload.single("listing[image]"),
     validateListing,
     wrapAsync(listingControllers.createListings),
   );
