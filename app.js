@@ -17,6 +17,7 @@ const userRoutes = require("./routes/user");
 
 // SESSION & AUTH
 const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local"); // ✅ FIXED NAME
@@ -26,9 +27,9 @@ const User = require("./models/user");
 // 🗄️ DB CONNECTION
 // =======================
 mongoose
-  .connect("mongodb://127.0.0.1:27017/wanderlust")
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log(err));
+  .connect(process.env.ATLASDB_URL)
+  .then(() => console.log("✅ MongoDB Atlas Connected"))
+  .catch((err) => console.log("❌ DB ERROR:", err));
 
 // =======================
 // ⚙️ VIEW ENGINE
@@ -47,12 +48,25 @@ app.use(express.static(path.join(__dirname, "public")));
 // =======================
 // 🔐 SESSION CONFIG
 // =======================
+
+const store = MongoStore.create({
+  mongoUrl: process.env.ATLASDB_URL,
+  crypto: {
+    secret: process.env.SESSION_SECRET || process.env.secret,
+  },
+  touchAfter: 24 * 3600,
+});
+store.on("error", (err) => {
+  console.log("❌ MONGO SESSION STORE ERROR:", err);
+});
+
 const sessionOptions = {
-  secret: "mysupersecretcode",
+  store,
+  secret: process.env.SESSION_SECRET || process.env.secret,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // ✅ FIXED
+    expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
   },
@@ -85,9 +99,9 @@ app.use((req, res, next) => {
 // =======================
 // 🏠 HOME ROUTE
 // =======================
-app.get("/", (req, res) => {
-  res.send("Home Page");
-});
+// app.get("/", (req, res) => {
+//   res.send("Home Page");
+// });
 
 // =======================
 // 🚏 ROUTES
